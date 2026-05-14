@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>AWS EC2 Nginx Status</title>
+	<style>
+		:root {
+			--bg-1: #071126;
+			--bg-2: #0f2749;
+			--accent: #ff9d2f;
+			--accent-soft: #ffd8aa;
+			--panel: rgba(8, 18, 38, 0.72);
+			--text: #f3f7ff;
+			--muted: #a8b7d8;
+			--ok: #45d483;
+			--border: rgba(255, 255, 255, 0.18);
+			--shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		html,
+		body {
+			margin: 0;
+			min-height: 100%;
+			font-family: "Trebuchet MS", "Segoe UI", Tahoma, sans-serif;
+			color: var(--text);
+			background:
+				radial-gradient(circle at 15% 12%, rgba(255, 157, 47, 0.24), transparent 42%),
+				radial-gradient(circle at 88% 82%, rgba(68, 158, 255, 0.26), transparent 35%),
+				linear-gradient(135deg, var(--bg-1), var(--bg-2));
+		}
+
+		body {
+			display: grid;
+			place-items: center;
+			padding: 2rem 1rem;
+		}
+
+		.status-card {
+			width: min(900px, 100%);
+			border: 1px solid var(--border);
+			border-radius: 24px;
+			background: var(--panel);
+			backdrop-filter: blur(10px);
+			box-shadow: var(--shadow);
+			overflow: hidden;
+			animation: fade-slide 700ms ease-out;
+		}
+
+		.top-bar {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 1rem;
+			padding: 1rem 1.25rem;
+			border-bottom: 1px solid var(--border);
+			background: rgba(255, 255, 255, 0.04);
+		}
+
+		.pill {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.5rem;
+			padding: 0.35rem 0.75rem;
+			border-radius: 999px;
+			border: 1px solid rgba(69, 212, 131, 0.45);
+			color: #d8ffe9;
+			background: rgba(69, 212, 131, 0.14);
+			font-size: 0.85rem;
+			letter-spacing: 0.02em;
+			white-space: nowrap;
+		}
+
+		.pill-dot {
+			width: 0.55rem;
+			aspect-ratio: 1;
+			border-radius: 50%;
+			background: var(--ok);
+			box-shadow: 0 0 10px var(--ok);
+		}
+
+		.content {
+			display: grid;
+			gap: 1.25rem;
+			padding: 1.5rem;
+		}
+
+		.headline {
+			margin: 0;
+			font-size: clamp(1.65rem, 4vw, 2.75rem);
+			line-height: 1.12;
+			max-width: 18ch;
+		}
+
+		.headline span {
+			color: var(--accent);
+			text-shadow: 0 0 20px rgba(255, 157, 47, 0.35);
+		}
+
+		.subtext {
+			margin: 0;
+			max-width: 62ch;
+			color: var(--muted);
+			line-height: 1.55;
+		}
+
+		.grid {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 1rem;
+		}
+
+		.panel {
+			padding: 1rem;
+			border-radius: 16px;
+			border: 1px solid var(--border);
+			background: rgba(255, 255, 255, 0.03);
+		}
+
+		.label {
+			margin: 0 0 0.5rem;
+			font-size: 0.8rem;
+			text-transform: uppercase;
+			letter-spacing: 0.11em;
+			color: var(--accent-soft);
+		}
+
+		.value {
+			margin: 0;
+			font-size: 1.02rem;
+			color: var(--text);
+			word-break: break-word;
+		}
+
+		.terminal {
+			margin: 0;
+			padding: 0.95rem 1rem;
+			border-radius: 14px;
+			border: 1px solid rgba(255, 157, 47, 0.3);
+			background: rgba(0, 0, 0, 0.34);
+			color: #ffe2bd;
+			font: 0.9rem/1.55 "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+			white-space: pre-wrap;
+		}
+
+		.footer {
+			padding: 1rem 1.5rem 1.4rem;
+			color: var(--muted);
+			font-size: 0.95rem;
+			border-top: 1px solid var(--border);
+		}
+
+		@keyframes fade-slide {
+			from {
+				opacity: 0;
+				transform: translateY(16px) scale(0.99);
+			}
+
+			to {
+				opacity: 1;
+				transform: translateY(0) scale(1);
+			}
+		}
+
+		@media (max-width: 720px) {
+			.grid {
+				grid-template-columns: 1fr;
+			}
+
+			.top-bar {
+				flex-direction: column;
+				align-items: flex-start;
+			}
+		}
+	</style>
+</head>
+<body>
+	<main class="status-card" role="main" aria-label="EC2 nginx status page">
+		<header class="top-bar">
+			<strong>Amazon EC2 / Nginx</strong>
+			<span class="pill"><span class="pill-dot"></span> Server Online</span>
+		</header>
+
+		<section class="content">
+			<h1 class="headline">Your <span>AWS EC2</span> instance is serving this page with Nginx.</h1>
+			<p class="subtext">
+				Deployment succeeded. This file is being delivered directly from your EC2 host through Nginx,
+				proving your web server and network path are active.
+			</p>
+
+			<div class="grid" aria-label="Server details">
+				<article class="panel">
+					<p class="label">Compute</p>
+					<p class="value">EC2 Instance Running</p>
+				</article>
+				<article class="panel">
+					<p class="label">Web Server</p>
+					<p class="value">Nginx Active and Serving</p>
+				</article>
+				<article class="panel">
+					<p class="label">Document Root</p>
+					<p class="value">/var/www/html/index.html</p>
+				</article>
+				<article class="panel">
+					<p class="label">Protocol</p>
+					<p class="value">HTTP 200 OK</p>
+				</article>
+			</div>
+
+			<pre class="terminal">$ curl -I http://your-ec2-public-ip
+HTTP/1.1 200 OK
+Server: nginx
+Content-Type: text/html</pre>
+		</section>
+
+		<footer class="footer">
+			Replace placeholder values with your instance ID, region, and public DNS when needed.
+		</footer>
+	</main>
+</body>
+</html>
+`
